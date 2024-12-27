@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h2 {
+            color: #333;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #otp-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>OTP Verification</h2>
+
+        <!-- Email Section -->
+        <div id="email-section">
+            <p>Enter your email to receive an OTP:</p>
+            <input type="email" id="email" placeholder="Enter your email" required>
+            <br>
+            <button onclick="sendOTP()">Send OTP</button>
+        </div>
+
+        <!-- Waiting Message -->
+        <p id="waiting-message" style="display: none;">Please wait while we send the OTP...</p>
+
+        <!-- OTP Section -->
+        <div id="otp-section">
+            <p>Enter the OTP you received on your email:</p>
+            <input type="text" id="otp" placeholder="Enter OTP" required>
+            <br>
+            <button onclick="verifyOTP()">Verify OTP</button>
+        </div>
+
+        <!-- Response Message -->
+        <p id="response"></p>
+    </div>
+
+    <script>
+        async function sendOTP() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert("Please enter a valid email.");
+                return;
+            }
+
+            // Show waiting message
+            const waitingMessage = document.getElementById('waiting-message');
+            waitingMessage.style.display = 'block';
+            waitingMessage.textContent = "Please wait while we send the OTP...";
+
+            // Send OTP request
+            const response = await fetch('/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const result = await response.json();
+            const responseMessage = document.getElementById('response');
+
+            if (result.success) {
+                waitingMessage.style.display = 'none'; // Hide waiting message
+                responseMessage.textContent = result.message;
+                responseMessage.style.color = 'green';
+
+                // Show OTP section
+                document.getElementById('otp-section').style.display = 'block';
+            } else {
+                waitingMessage.style.display = 'none'; // Hide waiting message
+                responseMessage.textContent = result.message;
+                responseMessage.style.color = 'red';
+            }
+        }
+
+        async function verifyOTP() {
+            const otp = document.getElementById('otp').value;
+            if (!otp) {
+                alert("Please enter the OTP.");
+                return;
+            }
+
+            const response = await fetch('/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp })
+            });
+
+            const result = await response.json();
+            const responseMessage = document.getElementById('response');
+
+            if (result.success) {
+                responseMessage.textContent = result.message;
+                responseMessage.style.color = 'green';
+            } else {
+                responseMessage.textContent = result.message;
+                responseMessage.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
